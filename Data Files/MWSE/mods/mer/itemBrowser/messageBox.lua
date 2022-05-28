@@ -1,5 +1,15 @@
+---@class CustomMessageBoxData
+---@field message string **Required**
+---@field buttons table **Required**
+---@field subheading string
+---@field doesCancel boolean
+---@field tooltip table
+---@field callbackParams table
+---@field maxButtons number
+---@field cancelCallback function
+
+
 --Generic Tooltip with header and description
----@param e craftingFrameworkTooltipData
 local function createTooltip(e)
     if type(e) == "function" then
         e = e()
@@ -36,7 +46,6 @@ local function createTooltip(e)
     tooltip:updateLayout()
 end
 
----@param e { buttons : craftingFrameworkMenuButtonData[], bottonsBlock : tes3uiElement, menu : tes3uiElement, startIndex : number, endIndex : number, callbackParams : table }
 local function populateButtons(e)
     local buttons = e.buttons
     local buttonsBlock = e.buttonsBlock
@@ -100,6 +109,7 @@ end
 
 local messageBoxId = tes3ui.registerID("CustomMessageBox")
 
+---@param params CustomMessageBoxData
 local function messageBox(params)
     local function enable(button)
         button.disabled = false
@@ -121,7 +131,11 @@ local function messageBox(params)
     do
         menu:getContentElement().childAlignX = 0.5
         tes3ui.enterMenuMode(messageBoxId)
-        menu:createLabel{id = tes3ui.registerID("BardicInspiration:MessageBox_Title"), text = message}
+        local title = menu:createLabel{id = tes3ui.registerID("MessageBox_Title"), text = message}
+        if params.subheading then
+            title.color = tes3ui.getPalette(tes3.palette.headerColor)
+            menu:createLabel{id = tes3ui.registerID("MessageBox_Subheading"), text = params.subheading}
+        end
     end
 
     --create button block

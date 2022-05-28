@@ -54,11 +54,20 @@ this.static = {
             requiredFields = { type = tes3.bookType.book}
         },
         {
-            name = "Scrolls",
+            name = "Scrolls (Non-Magic)",
             objectTypes = {
                 [tes3.objectType.book] = true
             },
+            enchanted = false,
             requiredFields = { type = tes3.bookType.scroll}
+        },
+        {
+            name = "Scrolls (Magic)",
+            objectTypes = {
+                [tes3.objectType.book] = true
+            },
+            enchanted = true,
+            requiredFields = { type = tes3.bookType.scroll }
         },
         {
             name = "Ingredients",
@@ -93,6 +102,7 @@ this.static = {
 --MCM Config (stored as JSON)
 this.configPath = "itemBrowser"
 this.mcmDefault = {
+    enabled = true,
     logLevel = "INFO",
     hotKey = {
         enabled = true,

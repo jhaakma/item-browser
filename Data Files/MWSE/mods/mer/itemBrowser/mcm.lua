@@ -11,10 +11,10 @@ local LINKS_LIST = {
     --     text = "Wiki",
     --     url = "https://github.com/jhaakma/crafting-framework/wiki"
     -- },
-    -- {
-    --     text = "Nexus",
-    --     url = "https://www.nexusmods.com/morrowind/mods/51009"
-    -- },
+    {
+        text = "Nexus",
+        url = "https://www.nexusmods.com/morrowind/mods/51366"
+    },
     {
         text = "Buy me a coffee",
         url = "https://ko-fi.com/merlord"
@@ -51,6 +51,17 @@ local function registerMCM()
 
     local page = template:createSideBarPage{ label = "Settings"}
     addSideBar(page)
+
+    page:createYesNoButton{
+        label = "Enable Mod",
+        description = "Turn this mod on or off. Expect a delay if enabling for the first time this game session, as it will take a moment to register all of the recipes.",
+        variable = mwse.mcm.createTableVariable{ id = "enabled", table = mcmConfig },
+        callback = function(self)
+            if self.variable.value == true then
+                event.trigger("ItemBrowser:RegisterMenus")
+            end
+        end
+    }
 
     page:createKeyBinder{
         label = "Hot key",
