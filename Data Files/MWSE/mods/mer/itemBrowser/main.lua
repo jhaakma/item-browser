@@ -65,8 +65,38 @@ local function getDescription(object)
     return description
 end
 
-local function addRecipe(recipes, obj)
-    local recipe = {
+---@param recipes CraftingFrameworkRecipeData
+---@param obj tes3object|tes3armor|tes3clothing|tes3misc|tes3light|tes3weapon|tes3book|tes3probe|tes3lockpick
+---@return boolean #Returns true if this object can be added to the recipe list.
+local function canAddObject(obj)
+    if category.slots then
+        if not category.slots[obj.slot] then
+            return false
+        end
+    end
+    if category.requiredFields then
+        for k, v in pairs(category.requiredFields) do
+            if obj[k] ~= v then
+                return false
+            end
+        end
+    end
+    if category.enchanted ~= nil then
+        if obj.enchantment and (category.enchanted == false) then
+            return false
+        end
+        if (not obj.enchantment) and (category.enchanted == true) then
+            return false
+        end
+    end
+    if obj.name == "" then return false end
+    return true
+end
+
+---@param obj tes3object|tes3armor|tes3clothing|tes3misc|tes3light|tes3weapon|tes3book|tes3probe|tes3lockpick
+---@return CraftingFrameworkRecipeData
+local function createObjectRecipe(obj)
+    return {
         id = "itemBrowser:" .. obj.id,
         craftableId = obj.id,
         category = obj.sourceMod,
@@ -74,67 +104,51 @@ local function addRecipe(recipes, obj)
         description = getDescription(obj),
         persist = false,
     }
-    table.insert(recipes, recipe)
 end
 
-local menusRegistered
+local function createMenuForCategory(recipes, category)
+    return CraftingFramework.MenuActivator:new{
+        name = "Item Browser: " .. category.name,
+        id = "ItemBrowserActivate:" .. category.name,
+        type = "event",
+        recipes = recipes,
+        defaultSort = "name",
+        defaultFilter = "all",
+        defaultShowCategories = true,
+        closeCallback = showMenu,
+    }
+end
+
+local menusAlreadyRegistered --only register once
 local function registerMenus()
     logger:debug("Registering Item Menus")
-    if not menusRegistered then
+    if not menusAlreadyRegistered then
+        menusAlreadyRegistered = true
         for _, category in pairs(config.static.categories) do
             logger:debug("Category: %s", category.name)
             local recipes = {}
             local count = 0
             for objectType, _ in pairs(category.objectTypes) do
-                ---@param obj tes3object|tes3armor|tes3clothing|tes3misc|tes3light|tes3weapon|tes3book|tes3probe|tes3lockpick
                 for obj in tes3.iterateObjects(objectType) do
-                    local invalid = false
-                    if category.slots then
-                        if not category.slots[obj.slot] then
-                            invalid = true
-                        end
-                    end
-                    if category.requiredFields then
-                        for k, v in pairs(category.requiredFields) do
-                            if obj[k] ~= v then
-                                invalid = true
-                            end
-                        end
-                    end
-                    if category.enchanted ~= nil then
-                        if obj.enchantment and (category.enchanted == false) then
-                            invalid = true
-                        end
-                        if (not obj.enchantment) and (category.enchanted == true) then
-                            invalid = true
-                        end
-                    end
-                    if obj.name == "" then invalid = true end
-                    if not invalid then
+                    if canAddObject(obj) then
+                        local recipe = createObjectRecipe(obj)
+                        table.insert(recipes, recipe)
                         count = count + 1
-                        addRecipe(recipes, obj)
                     end
                 end
             end
             logger:debug("Total %s registered: %d", category.name, count)
-            CraftingFramework.MenuActivator:new{
-                name = "Item Browser: " .. category.name,
-                id = "ItemBrowserActivate:" .. category.name,
-                type = "event",
-                recipes = recipes,
-                defaultSort = "name",
-                defaultFilter = "all",
-                defaultShowCategories = true,
-                closeCallback = showMenu,
-            }
+            createMenuForCategory(recipes, category)
         end
-        menusRegistered = true
     end
 end
-event.register("ItemBrowser:RegisterMenus", registerMenus)
+
 
 ---@param e initializedEventData
 local function onInitialised(e)
+    --Event for triggering recipes when enabling for the first time from MCM
+    event.register("ItemBrowser:RegisterMenus", registerMenus)
+    --Menu Hotkey event
     event.register(tes3.event.keyDown, onKeyDown)
     if config.mcm.enabled then
         registerMenus()
