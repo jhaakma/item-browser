@@ -9,10 +9,24 @@ this.static = {
     [[Item Browser allows you to browse all items in the game, sorted by which mod added them, and add them to your inventory.]],
     categories = {
         {
+            name = "Ammunition",
+            objectTypes = {
+                [tes3.objectType.ammunition] = true
+            },
+            resultAmount = 100
+        },
+        {
             name = "Armor",
             objectTypes ={
                 [tes3.objectType.armor] = true
             },
+        },
+        {
+            name = "Books",
+            objectTypes = {
+                [tes3.objectType.book] = true
+            },
+            requiredFields = { type = tes3.bookType.book}
         },
         {
             name = "Clothing",
@@ -31,6 +45,33 @@ this.static = {
             }
         },
         {
+            name = "Ingredients",
+            objectTypes = {
+                [tes3.objectType.ingredient] = true
+            },
+        },
+        {
+            name = "Lights",
+            objectTypes = {
+                [tes3.objectType.light] = true
+            },
+            requiredFields = { canCarry = true}
+        },
+        {
+            name = "Lockpicks/Probes",
+            objectTypes = {
+                [tes3.objectType.probe] = true,
+
+                [tes3.objectType.lockpick] = true
+            },
+        },
+        {
+            name = "Misc",
+            objectTypes = {
+                [tes3.objectType.miscItem] = true
+            },
+        },
+        {
             name = "Rings",
             objectTypes = {
                 [tes3.objectType.clothing] = true
@@ -39,19 +80,6 @@ this.static = {
                 [tes3.clothingSlot.ring] = true,
                 [tes3.clothingSlot.amulet] = true,
             }
-        },
-        {
-            name = "Weapons",
-            objectTypes = {
-                [tes3.objectType.weapon] = true
-            },
-        },
-        {
-            name = "Books",
-            objectTypes = {
-                [tes3.objectType.book] = true
-            },
-            requiredFields = { type = tes3.bookType.book}
         },
         {
             name = "Scrolls (Non-Magic)",
@@ -70,32 +98,11 @@ this.static = {
             requiredFields = { type = tes3.bookType.scroll }
         },
         {
-            name = "Ingredients",
+            name = "Weapons",
             objectTypes = {
-                [tes3.objectType.ingredient] = true
+                [tes3.objectType.weapon] = true
             },
         },
-        {
-            name = "Lockpicks/Probes",
-            objectTypes = {
-                [tes3.objectType.probe] = true,
-
-                [tes3.objectType.lockpick] = true
-            },
-        },
-        {
-            name = "Misc",
-            objectTypes = {
-                [tes3.objectType.miscItem] = true
-            },
-        },
-        {
-            name = "Lights",
-            objectTypes = {
-                [tes3.objectType.light] = true
-            },
-            requiredFields = { canCarry = true}
-        }
     }
 }
 

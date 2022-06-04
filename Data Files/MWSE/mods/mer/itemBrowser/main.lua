@@ -22,8 +22,8 @@ local function showMenu()
         })
     end
     Util.messageBox{
-        message = "Item Browser",
-        subheading = "Select Object Type:",
+        header = "Item Browser",
+        message = "Select Object Type:",
         buttons = buttons,
         doesCancel = true,
     }
@@ -65,7 +65,8 @@ local function getDescription(object)
     return description
 end
 
-local function addRecipe(recipes, obj)
+local function addRecipe(recipes, category, obj)
+    ---@type craftingFrameworkRecipe
     local recipe = {
         id = "itemBrowser:" .. obj.id,
         craftableId = obj.id,
@@ -73,6 +74,7 @@ local function addRecipe(recipes, obj)
         soundId = "Item Misc Up",
         description = getDescription(obj),
         persist = false,
+        resultAmount = category.resultAmount
     }
     table.insert(recipes, recipe)
 end
@@ -112,7 +114,7 @@ local function registerMenus()
                     if obj.name == "" then invalid = true end
                     if not invalid then
                         count = count + 1
-                        addRecipe(recipes, obj)
+                        addRecipe(recipes, category, obj)
                     end
                 end
             end

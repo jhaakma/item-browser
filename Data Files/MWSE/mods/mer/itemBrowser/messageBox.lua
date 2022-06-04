@@ -1,7 +1,7 @@
 ---@class CustomMessageBoxData
 ---@field message string **Required**
----@field buttons table **Required**
----@field subheading string
+---@field buttons table **Required**\
+---@field header string
 ---@field doesCancel boolean
 ---@field tooltip table
 ---@field callbackParams table
@@ -124,18 +124,16 @@ local function messageBox(params)
     end
     local callbackParams = params.callbackParams
     local maxButtonsPerColumn = params.maxButtons or 30
-    local message = params.message
-    local buttons = params.buttons
     --create menu
     local menu = tes3ui.createMenu{ id = messageBoxId, fixedFrame = true }
     do
         menu:getContentElement().childAlignX = 0.5
         tes3ui.enterMenuMode(messageBoxId)
-        local title = menu:createLabel{id = tes3ui.registerID("MessageBox_Title"), text = message}
-        if params.subheading then
-            title.color = tes3ui.getPalette(tes3.palette.headerColor)
-            menu:createLabel{id = tes3ui.registerID("MessageBox_Subheading"), text = params.subheading}
+        if params.header then
+            local header = menu:createLabel{id = tes3ui.registerID("MessageBox_Header"), text = params.header}
+            header.color = tes3ui.getPalette(tes3.palette.headerColor)
         end
+            menu:createLabel{id = tes3ui.registerID("MessageBox_Subheading"), text = params.message}
     end
 
     --create button block
@@ -150,7 +148,7 @@ local function messageBox(params)
     --populate initial buttons
     local startIndex, endIndex = 1, maxButtonsPerColumn
     populateButtons{
-        buttons= buttons,
+        buttons= params.buttons,
         menu = menu,
         buttonsBlock = buttonsBlock,
         startIndex = startIndex,
@@ -159,7 +157,7 @@ local function messageBox(params)
     }
 
     --add next/previous buttons
-    if #buttons > maxButtonsPerColumn then
+    if #params.buttons > maxButtonsPerColumn then
         local arrowButtonsBlock = menu:createBlock()
         arrowButtonsBlock.flowDirection = "left_to_right"
         arrowButtonsBlock.borderTop = 4
@@ -179,12 +177,12 @@ local function messageBox(params)
 
             --move endIndex back, check if enable next button
             endIndex = endIndex - maxButtonsPerColumn
-            if endIndex <= #buttons then
+            if endIndex <= #params.buttons then
                 enable(nextButton)
             end
 
             populateButtons{
-                buttons= buttons,
+                buttons= params.buttons,
                 menu = menu,
                 buttonsBlock = buttonsBlock,
                 startIndex = startIndex,
@@ -202,12 +200,12 @@ local function messageBox(params)
 
             --move endIndex forward, check if disable next button
             endIndex = endIndex + maxButtonsPerColumn
-            if endIndex >= #buttons then
+            if endIndex >= #params.buttons then
                 disable(nextButton)
             end
 
             populateButtons{
-                buttons= buttons,
+                buttons= params.buttons,
                 menu = menu,
                 buttonsBlock = buttonsBlock,
                 startIndex = startIndex,
