@@ -13,7 +13,13 @@ this.static = {
             objectTypes = {
                 [tes3.objectType.ammunition] = true
             },
-            resultAmount = 100
+            resultAmount = 10
+        },
+        {
+            name = "Apparatus",
+            objectTypes = {
+                [tes3.objectType.apparatus] = true
+            },
         },
         {
             name = "Armor",
@@ -70,6 +76,13 @@ this.static = {
             objectTypes = {
                 [tes3.objectType.miscItem] = true
             },
+        },
+        {
+            name = "Potions",
+            objectTypes = {
+                [tes3.objectType.alchemy] = true
+            },
+            resultAmount = 10
         },
         {
             name = "Rings",
