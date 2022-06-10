@@ -1,13 +1,12 @@
 ---@class CustomMessageBoxData
 ---@field message string **Required**
----@field buttons table **Required**\
+---@field buttons table **Required**
 ---@field header string
 ---@field doesCancel boolean
 ---@field tooltip table
 ---@field callbackParams table
 ---@field maxButtons number
 ---@field cancelCallback function
-
 
 --Generic Tooltip with header and description
 local function createTooltip(e)

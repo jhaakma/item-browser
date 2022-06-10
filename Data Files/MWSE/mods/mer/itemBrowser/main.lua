@@ -9,34 +9,6 @@ if not CraftingFramework then
     return
 end
 
-local function showMenu()
-    local buttons = {}
-    for _, v in ipairs(config.static.categories) do
-        table.insert(buttons, {
-            text = v.name,
-            callback = function()
-                timer.delayOneFrame(function()
-                    event.trigger("ItemBrowserActivate:" .. v.name)
-                end)
-            end
-        })
-    end
-    Util.messageBox{
-        header = "Item Browser",
-        message = "Select Object Type:",
-        buttons = buttons,
-        doesCancel = true,
-    }
-end
-
----@param e keyDownEventData
-local function onKeyDown(e)
-    if tes3ui.menuMode() then return end
-    if not config.mcm.enabled then return end
-    if Util.isKeyPressed(e, config.mcm.hotKey) then
-        showMenu()
-    end
-end
 
 ---@param object tes3object|tes3armor|tes3clothing|tes3misc|tes3light|tes3weapon|tes3book|tes3probe|tes3lockpick
 local function getDescription(object)
@@ -79,72 +51,121 @@ local function addRecipe(recipes, category, obj)
     table.insert(recipes, recipe)
 end
 
+local function isValidObject(object, category)
+    if category.slots then
+        if not category.slots[object.slot] then
+            return false
+        end
+    end
+    if category.requiredFields then
+        for k, v in pairs(category.requiredFields) do
+            if object[k] ~= v then
+                return false
+            end
+        end
+    end
+    if category.enchanted ~= nil then
+        if object.enchantment and (category.enchanted == false) then
+            return false
+        end
+        if (not object.enchantment) and (category.enchanted == true) then
+            return false
+        end
+    end
+    if object.name == "" then return false end
+    if not object.sourceMod then return false end
+    return true
+end
+
+local function registerObjectTypeForCategory(objectType, category, recipes)
+    ---@param obj tes3object|tes3armor|tes3clothing|tes3misc|tes3light|tes3weapon|tes3book|tes3probe|tes3lockpick
+    for object in tes3.iterateObjects(objectType) do
+        if isValidObject(object, category) then
+            addRecipe(recipes, category, object)
+        end
+    end
+end
+
+local showMenu
+local function registerCategory(category)
+    if not category.registered then
+        category.registered = true
+        logger:debug("Category: %s", category.name)
+        local recipes = {}
+        for objectType, _ in pairs(category.objectTypes) do
+            registerObjectTypeForCategory(objectType, category, recipes)
+        end
+        logger:debug("Total %s registered: %d", category.name, #recipes)
+        CraftingFramework.MenuActivator:new{
+            name = "Item Browser: " .. category.name,
+            id = "ItemBrowserActivate:" .. category.name,
+            type = "event",
+            recipes = recipes,
+            defaultSort = "name",
+            defaultFilter = "all",
+            defaultShowCategories = true,
+            closeCallback = showMenu,
+            craftButtonText = "Add To Inventory",
+            showCollapseCategoriesButton = true,
+            showCategoriesButton = true,
+            showFilterButton = false,
+            showSortButton = false,
+        }
+    end
+end
+
+
 local menusRegistered
 local function registerMenus()
     logger:debug("Registering Item Menus")
     if not menusRegistered then
         for _, category in pairs(config.static.categories) do
-            logger:debug("Category: %s", category.name)
-            local recipes = {}
-            local count = 0
-            for objectType, _ in pairs(category.objectTypes) do
-                ---@param obj tes3object|tes3armor|tes3clothing|tes3misc|tes3light|tes3weapon|tes3book|tes3probe|tes3lockpick
-                for obj in tes3.iterateObjects(objectType) do
-                    local invalid = false
-                    if category.slots then
-                        if not category.slots[obj.slot] then
-                            invalid = true
-                        end
-                    end
-                    if category.requiredFields then
-                        for k, v in pairs(category.requiredFields) do
-                            if obj[k] ~= v then
-                                invalid = true
-                            end
-                        end
-                    end
-                    if category.enchanted ~= nil then
-                        if obj.enchantment and (category.enchanted == false) then
-                            invalid = true
-                        end
-                        if (not obj.enchantment) and (category.enchanted == true) then
-                            invalid = true
-                        end
-                    end
-                    if obj.name == "" then invalid = true end
-                    if not invalid then
-                        count = count + 1
-                        addRecipe(recipes, category, obj)
-                    end
-                end
-            end
-            logger:debug("Total %s registered: %d", category.name, count)
-            CraftingFramework.MenuActivator:new{
-                name = "Item Browser: " .. category.name,
-                id = "ItemBrowserActivate:" .. category.name,
-                type = "event",
-                recipes = recipes,
-                defaultSort = "name",
-                defaultFilter = "all",
-                defaultShowCategories = true,
-                closeCallback = showMenu,
-            }
+            registerCategory(category)
         end
         menusRegistered = true
     end
 end
 event.register("ItemBrowser:RegisterMenus", registerMenus)
 
+
+showMenu = function ()
+    local buttons = {}
+    for _, category in ipairs(config.static.categories) do
+        table.insert(buttons, {
+            text = category.name,
+            callback = function()
+                timer.delayOneFrame(function()
+                    registerCategory(category)
+                    event.trigger("ItemBrowserActivate:" .. category.name)
+                end)
+            end
+        })
+    end
+    Util.messageBox{
+        header = "Item Browser",
+        message = "Select Object Type:",
+        buttons = buttons,
+        doesCancel = true,
+    }
+end
+
+---@param e keyDownEventData
+local function onKeyDown(e)
+    if tes3ui.menuMode() then return end
+    if not config.mcm.enabled then return end
+    if Util.isKeyPressed(e, config.mcm.hotKey) then
+        showMenu()
+    end
+end
+
 ---@param e initializedEventData
 local function onInitialised(e)
     event.register(tes3.event.keyDown, onKeyDown)
     if config.mcm.enabled then
-        registerMenus()
+        --registerMenus()
     else
         logger:debug("Mod disabled, skipping recipe registration.")
     end
     logger:info("Initialised: %s", Util.getVersion())
 end
 event.register(tes3.event.initialized, onInitialised)
-
-
