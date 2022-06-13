@@ -141,11 +141,11 @@ showMenu = function ()
             end
         })
     end
-    Util.messageBox{
+    tes3ui.showMessageMenu{
         header = "Item Browser",
         message = "Select Object Type:",
         buttons = buttons,
-        doesCancel = true,
+        cancels = true,
     }
 end
 

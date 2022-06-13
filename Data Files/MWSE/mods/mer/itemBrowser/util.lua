@@ -1,7 +1,6 @@
 local Util = {}
 
 local config = require("mer.itemBrowser.config")
-Util.messageBox = require("mer.itemBrowser.messageBox")
 Util.loggers = {}
 do --logger
     local logLevel = config.mcm.logLevel
