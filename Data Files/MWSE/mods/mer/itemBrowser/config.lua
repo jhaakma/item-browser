@@ -85,6 +85,13 @@ this.static = {
             resultAmount = 10
         },
         {
+            name = "Repair Tools",
+            objectTypes = {
+                [tes3.objectType.repairItem] = true
+            },
+            resultAmount = 1,
+        },
+        {
             name = "Rings",
             objectTypes = {
                 [tes3.objectType.clothing] = true
